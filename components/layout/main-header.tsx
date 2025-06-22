@@ -21,7 +21,7 @@ export default function MainHeader() {
               </Link>
             </div>
             <div className="flex items-center space-x-1 relative">
-              <Link href="/shop" className="text-gray-700 hover:text-green-600 font-medium">
+              <Link href="/dashboard/marketplace" className="text-gray-700 hover:text-green-600 font-medium">
                 Marketplace
               </Link>
             </div>
@@ -31,7 +31,7 @@ export default function MainHeader() {
               </Link>
             </div>
             <div className="flex items-center space-x-1 relative">
-              <Link href="/vendors" className="text-gray-700 hover:text-green-600 font-medium">
+              <Link href="/dashboard/vendors" className="text-gray-700 hover:text-green-600 font-medium">
                 Companies
               </Link>
             </div>

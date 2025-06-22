@@ -17,7 +17,7 @@ const translations = {
   "sidebar.settings": "Settings",
   "sidebar.admin": "Admin",
   "sidebar.users": "User Management",
-  "sidebar.companies": "Company Profile",
+  "sidebar.companies": "Manage Companies",
   "nav.logout": "Logout",
   "sidebar.marketplace": "Marketplace",
   "sidebar.vendors": "Vendor Directory",

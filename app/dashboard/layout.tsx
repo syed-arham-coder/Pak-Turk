@@ -17,7 +17,7 @@ export default function DashboardLayout({
   }
 
   if (!user) {
-    redirect("/")
+    redirect("/login")
   }
 
   return (

@@ -149,42 +149,7 @@ export function AppSidebar({ className }: SidebarProps) {
       <div className="flex h-full flex-col">
         {/* Header */}
         <div className="p-2">
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="ghost" className="w-full justify-start p-2 h-auto">
-                <div className="flex items-center gap-2 w-full">
-                  <Avatar className="h-8 w-8 flex-shrink-0">
-                    <AvatarFallback className="bg-primary text-primary-foreground text-xs">
-                      {getInitials(user?.fullName || "User")}
-                    </AvatarFallback>
-                  </Avatar>
-                  {isHovered && (
-                    <div className="flex flex-col items-start truncate min-w-0 opacity-100 transition-opacity duration-300">
-                      <span className="text-sm font-semibold truncate">
-                        {user?.fullName}
-                      </span>
-                      <span className="text-xs text-muted-foreground truncate">{user?.email}</span>
-                    </div>
-                  )}
-                  {isHovered && <ChevronDown className="ml-auto h-4 w-4 shrink-0 opacity-50" />}
-                </div>
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent className="w-56" side="right" align="start">
-              <DropdownMenuLabel>My Account</DropdownMenuLabel>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem>Profile</DropdownMenuItem>
-              <DropdownMenuItem>Billing</DropdownMenuItem>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem
-                onClick={logout}
-                className="text-destructive focus:text-destructive focus:bg-destructive/10"
-              >
-                <LogOut className="mr-2 h-4 w-4" />
-                {t("nav.logout")}
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
+          {/* Removed DropdownMenu for My Account as per user request */}
         </div>
 
         {/* Content */}

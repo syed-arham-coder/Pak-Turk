@@ -126,58 +126,35 @@ export function AppSidebar({ userRole, companyName, companyLogo }: AppSidebarPro
       <div className="flex h-full flex-col">
         {/* Header */}
         <div className="p-2">
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="ghost" className="w-full justify-start p-2 h-auto">
-                <div className="flex items-center gap-2 w-full">
-                  {companyLogo ? (
-                    <Image
-                      src={companyLogo || "/placeholder.svg"}
-                      alt={`${companyName || 'Company'} logo`}
-                      width={32}
-                      height={32}
-                      className="rounded-sm flex-shrink-0"
-                    />
-                  ) : (
-                    <Avatar className="h-8 w-8 flex-shrink-0">
-                      <AvatarFallback className="bg-primary text-primary-foreground text-xs">
-                        {getInitials(companyName)}
-                      </AvatarFallback>
-                    </Avatar>
-                  )}
-                  <div
-                    className={cn(
-                      "flex flex-col items-start truncate min-w-0 transition-all duration-300",
-                      isHovered ? "opacity-100 w-auto" : "opacity-0 w-0 overflow-hidden",
-                    )}
-                  >
-                    <span className="text-sm font-semibold truncate">{companyName || 'Company'}</span>
-                    <span className="text-xs text-muted-foreground truncate">{user?.email || 'No email'}</span>
-                  </div>
-                  <ChevronDown
-                    className={cn(
-                      "h-4 w-4 shrink-0 opacity-50 transition-all duration-300",
-                      isHovered ? "ml-auto opacity-50" : "opacity-0 w-0",
-                    )}
-                  />
-                </div>
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent className="w-56" side="right" align="start">
-              <DropdownMenuLabel>My Account</DropdownMenuLabel>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem>Profile</DropdownMenuItem>
-              <DropdownMenuItem>Billing</DropdownMenuItem>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem
-                onClick={logout}
-                className="text-destructive focus:text-destructive focus:bg-destructive/10"
-              >
-                <LogOut className="mr-2 h-4 w-4" />
-                {t("nav.logout")}
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
+          <div className={cn(
+            "flex items-center w-full transition-all duration-300",
+            isHovered ? "gap-2" : "justify-center"
+          )}>
+            {companyLogo ? (
+              <Image
+                src={companyLogo || "/placeholder.svg"}
+                alt={`${companyName || 'Company'} logo`}
+                width={32}
+                height={32}
+                className="rounded-sm flex-shrink-0"
+              />
+            ) : (
+              <Avatar className="h-8 w-8 flex-shrink-0">
+                <AvatarFallback className="bg-primary text-primary-foreground text-xs">
+                  {getInitials(companyName)}
+                </AvatarFallback>
+              </Avatar>
+            )}
+            <div
+              className={cn(
+                "flex flex-col items-start truncate min-w-0 transition-all duration-300",
+                isHovered ? "opacity-100 w-auto ml-2" : "opacity-0 w-0 overflow-hidden"
+              )}
+            >
+              <span className="text-sm font-semibold truncate">{companyName || 'Company'}</span>
+              <span className="text-xs text-muted-foreground truncate">{user?.email || 'No email'}</span>
+            </div>
+          </div>
         </div>
 
         {/* Content */}

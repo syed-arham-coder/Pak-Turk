@@ -23,10 +23,10 @@ export default function TopHeader() {
             <span>USD</span>
             <ChevronDown className="w-3 h-3" />
           </div>
-          <div className="flex items-center space-x-1">
+          <Link href="/login" className="flex items-center space-x-1 hover:underline">
             <User className="w-4 h-4" />
             <span>My Account</span>
-          </div>
+          </Link>
         </div>
       </div>
     </div>

@@ -113,7 +113,7 @@ export function RegisterForm() {
       })
       form.reset()
       // Redirect to login page after successful registration
-      window.location.href = '/';
+      window.location.href = '/login';
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : "Registration failed. Please try again.";
       setFormError(errorMessage)

@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useRef } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
@@ -12,6 +12,7 @@ import { useAppContext } from "@/contexts/app-context"
 import { useToast } from "@/hooks/use-toast"
 import { Settings, UserCircle, Bell, Palette, ShieldCheck, Globe, DollarSign, Save } from "lucide-react"
 import { useTheme } from "next-themes"
+import { UserCircle as UserCircleIcon } from "lucide-react"
 
 interface UserSettings {
   name: string
@@ -52,6 +53,10 @@ export default function SettingsPage() {
   const [currentPassword, setCurrentPassword] = useState("")
   const [newPassword, setNewPassword] = useState("")
   const [confirmPassword, setConfirmPassword] = useState("")
+  const [profilePicture, setProfilePicture] = useState<File | null>(null)
+  const [imageKey, setImageKey] = useState(Date.now()) // for cache-busting
+
+  const fileInputRef = useRef<HTMLInputElement | null>(null)
 
   const handleSettingChange = (key: keyof UserSettings, value: any) => {
     setUserSettings((prev) => ({ ...prev, [key]: value }))
@@ -63,10 +68,26 @@ export default function SettingsPage() {
     }
   }
 
-  const handleProfileSave = () => {
-    // Simulate API call to save profile settings
-    console.log("Saving profile settings:", { name: userSettings.name, email: userSettings.email })
-    toast({ title: "Profile Updated", description: "Your profile information has been saved." })
+  const handleProfileSave = async () => {
+    try {
+      const res = await fetch("/api/auth/change-name", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          userId: user?.id,
+          newName: userSettings.name,
+        }),
+      })
+      const data = await res.json()
+      if (!res.ok) {
+        toast({ title: "Error", description: data.message || "Failed to update name.", variant: "destructive" })
+        return
+      }
+      toast({ title: "Profile Updated", description: data.message || "Your profile information has been saved." })
+      // Optionally update user context here if needed
+    } catch (error) {
+      toast({ title: "Error", description: "Something went wrong.", variant: "destructive" })
+    }
   }
 
   const handleNotificationSave = () => {
@@ -88,7 +109,7 @@ export default function SettingsPage() {
     toast({ title: "Preferences Updated", description: "Language, currency, and theme preferences saved." })
   }
 
-  const handleChangePassword = () => {
+  const handleChangePassword = async () => {
     if (newPassword !== confirmPassword) {
       toast({ title: "Error", description: "New passwords do not match.", variant: "destructive" })
       return
@@ -97,12 +118,54 @@ export default function SettingsPage() {
       toast({ title: "Error", description: "New password must be at least 8 characters long.", variant: "destructive" })
       return
     }
-    // Simulate API call
-    console.log("Changing password for:", user?.email, "New password:", newPassword)
-    toast({ title: "Password Changed", description: "Your password has been updated successfully." })
-    setCurrentPassword("")
-    setNewPassword("")
-    setConfirmPassword("")
+    try {
+      const res = await fetch("/api/auth/change-password", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          userId: user?.id,
+          currentPassword,
+          newPassword,
+        }),
+      })
+      const data = await res.json()
+      if (!res.ok) {
+        toast({ title: "Error", description: data.message || "Failed to change password.", variant: "destructive" })
+        return
+      }
+      toast({ title: "Password Changed", description: data.message || "Your password has been updated successfully." })
+      setCurrentPassword("")
+      setNewPassword("")
+      setConfirmPassword("")
+    } catch (error) {
+      toast({ title: "Error", description: "Something went wrong.", variant: "destructive" })
+    }
+  }
+
+  const handleProfilePictureChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (file) {
+      setProfilePicture(file)
+    }
+  }
+
+  const handleAvatarClick = () => {
+    fileInputRef.current?.click()
+  }
+
+  const handleProfilePictureUpload = async () => {
+    if (!profilePicture) return
+    const formData = new FormData()
+    formData.append("userId", String(user?.id || ""))
+    formData.append("profilePicture", profilePicture)
+    const res = await fetch("/api/auth/upload-profile-picture", {
+      method: "POST",
+      body: formData,
+    })
+    const data = await res.json()
+    toast({ title: data.message })
+    setProfilePicture(null)
+    setImageKey(Date.now()) // update to force reload
   }
 
   if (!user) return <p>Loading settings...</p>
@@ -114,6 +177,7 @@ export default function SettingsPage() {
           <Settings className="mr-3 h-8 w-8 text-primary" />
           Settings
         </h1>
+        <br />
         <p className="text-muted-foreground">Manage your account, preferences, and platform settings.</p>
       </div>
 
@@ -126,142 +190,38 @@ export default function SettingsPage() {
           <CardDescription>Update your personal information.</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div>
-            <Label htmlFor="name">Full Name</Label>
-            <Input id="name" value={userSettings.name} onChange={(e) => handleSettingChange("name", e.target.value)} />
+          <div className="flex flex-col items-start space-y-2">
+            <Label>Profile Picture</Label>
+            <div className="relative">
+              <button type="button" onClick={handleAvatarClick} className="focus:outline-none">
+                <img
+                  src={`/api/auth/profile-picture?userId=${user?.id}&t=${imageKey}`}
+                  alt="Profile"
+                  className="w-24 h-24 rounded-full object-cover border-2 border-primary"
+                  onError={(e) => { e.currentTarget.src = "/default-avatar.png"; }}
+                />
+              </button>
+              <input
+                ref={fileInputRef}
+                id="profilePicture"
+                type="file"
+                accept="image/*"
+                className="hidden"
+                onChange={handleProfilePictureChange}
+              />
+            </div>
+            {profilePicture && (
+              <Button size="sm" className="mt-2" onClick={handleProfilePictureUpload}>Upload Picture</Button>
+            )}
           </div>
           <div>
-            <Label htmlFor="email">Email Address</Label>
-            <Input
-              id="email"
-              type="email"
-              value={userSettings.email}
-              onChange={(e) => handleSettingChange("email", e.target.value)}
-            />
+            <Label htmlFor="name">Full Name</Label>
+            <Input id="name" value={userSettings.name} placeholder={user?.fullName || "Full Name"} onChange={(e) => handleSettingChange("name", e.target.value)} />
           </div>
         </CardContent>
         <CardFooter>
           <Button onClick={handleProfileSave}>
             <Save className="mr-2 h-4 w-4" /> Save Profile
-          </Button>
-        </CardFooter>
-      </Card>
-
-      {/* Notification Settings */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center">
-            <Bell className="mr-2 h-5 w-5 text-primary" /> Notification Settings
-          </CardTitle>
-          <CardDescription>Manage how you receive notifications.</CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="flex items-center justify-between">
-            <Label htmlFor="receiveNotifications" className="flex flex-col space-y-1">
-              <span>Receive Email Notifications</span>
-              <span className="font-normal leading-snug text-muted-foreground">
-                Get notified about new messages, meeting requests, etc.
-              </span>
-            </Label>
-            <Switch
-              id="receiveNotifications"
-              checked={userSettings.receiveNotifications}
-              onCheckedChange={(checked) => handleSettingChange("receiveNotifications", checked)}
-            />
-          </div>
-          <div className="flex items-center justify-between">
-            <Label htmlFor="notificationSound" className="flex flex-col space-y-1">
-              <span>Enable Notification Sounds</span>
-              <span className="font-normal leading-snug text-muted-foreground">
-                Play a sound for new notifications in the app.
-              </span>
-            </Label>
-            <Switch
-              id="notificationSound"
-              checked={userSettings.notificationSound}
-              onCheckedChange={(checked) => handleSettingChange("notificationSound", checked)}
-            />
-          </div>
-        </CardContent>
-        <CardFooter>
-          <Button onClick={handleNotificationSave}>
-            <Save className="mr-2 h-4 w-4" /> Save Notifications
-          </Button>
-        </CardFooter>
-      </Card>
-
-      {/* Preferences */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center">
-            <Palette className="mr-2 h-5 w-5 text-primary" /> Preferences
-          </CardTitle>
-          <CardDescription>Customize your platform experience.</CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div>
-              <Label htmlFor="language">Language</Label>
-              <Select
-                value={userSettings.preferredLanguage}
-                onValueChange={(value) =>
-                  handleSettingChange("preferredLanguage", value as UserSettings["preferredLanguage"])
-                }
-              >
-                <SelectTrigger id="language">
-                  <Globe className="mr-2 h-4 w-4 text-muted-foreground" />
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="en">English</SelectItem>
-                  <SelectItem value="es">Español</SelectItem>
-                  <SelectItem value="fr">Français</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <div>
-              <Label htmlFor="currency">Currency</Label>
-              <Select
-                value={userSettings.preferredCurrency}
-                onValueChange={(value) =>
-                  handleSettingChange("preferredCurrency", value as UserSettings["preferredCurrency"])
-                }
-              >
-                <SelectTrigger id="currency">
-                  <DollarSign className="mr-2 h-4 w-4 text-muted-foreground" />
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="USD">USD ($)</SelectItem>
-                  <SelectItem value="EUR">EUR (€)</SelectItem>
-                  <SelectItem value="GBP">GBP (£)</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <div>
-              <Label htmlFor="theme">Interface Theme</Label>
-              <Select
-                value={userSettings.interfaceTheme}
-                onValueChange={(value) =>
-                  handleSettingChange("interfaceTheme", value as UserSettings["interfaceTheme"])
-                }
-              >
-                <SelectTrigger id="theme">
-                  <Palette className="mr-2 h-4 w-4 text-muted-foreground" />
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="light">Light</SelectItem>
-                  <SelectItem value="dark">Dark</SelectItem>
-                  <SelectItem value="system">System Default</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
-        </CardContent>
-        <CardFooter>
-          <Button onClick={handlePreferencesSave}>
-            <Save className="mr-2 h-4 w-4" /> Save Preferences
           </Button>
         </CardFooter>
       </Card>

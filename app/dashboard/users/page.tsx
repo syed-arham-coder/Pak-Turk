@@ -122,8 +122,10 @@ export default function UserManagementPage() {
 
   const filteredUsers = users.filter(
     (u) =>
-      u.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      u.email.toLowerCase().includes(searchTerm.toLowerCase()),
+      u.name && u.email && (
+        u.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        u.email.toLowerCase().includes(searchTerm.toLowerCase())
+      )
   )
 
   const handleAddUser = async () => {

@@ -64,7 +64,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({
       id: userId,
       email,
-      fullName,
+      name: fullName,
       phone,
       role,
       status: "Active"
